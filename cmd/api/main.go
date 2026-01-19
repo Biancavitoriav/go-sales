@@ -1,26 +1,43 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"log"
 
+	"github.com/gin-gonic/gin"
 	"vendas/internal/handler"
-	"vendas/internal/infra/memory"
-	"vendas/internal/usecase"
+	"vendas/internal/repository"
+	"vendas/internal/service"
 )
 
 func main() {
+	// Inicializa os repositórios
+	customerRepo := repository.NewCustomerRepository()
+	productRepo := repository.NewProductRepository()
+
+	// Inicializa os serviços
+	customerService := service.NewCustomerService(customerRepo)
+	productService := service.NewProductService(productRepo)
+
+	// Inicializa os handlers
+	customerHandler := handler.NewCustomerHandler(customerService)
+	productHandler := handler.NewProductHandler(productService)
+
+	// Configura o router
 	r := gin.Default()
 
-	customerRepo := memory.NewCustomerRepo()
-	createCustomer := usecase.NewCreateCustomer(customerRepo)
-	customerHandler := handler.NewCustomerHandler(createCustomer)
-
-	productRepo := memory.NewProductRepo()
-	createProduct := usecase.NewCreateProduct(productRepo)
-	productHandler := handler.NewProductHandler(createProduct)
-
+	// Rotas de clientes
 	r.POST("/customers", customerHandler.Create)
-	r.POST("/products", productHandler.Create)
+	r.GET("/customers", customerHandler.List)
+	r.GET("/customers/:id", customerHandler.GetByID)
 
-	r.Run(":8080")
+	// Rotas de produtos
+	r.POST("/products", productHandler.Create)
+	r.GET("/products", productHandler.List)
+	r.GET("/products/:id", productHandler.GetByID)
+
+	// Inicia o servidor
+	log.Println("Server starting on :8080...")
+	if err := r.Run(":8080"); err != nil {
+		log.Fatal("Failed to start server:", err)
+	}
 }
