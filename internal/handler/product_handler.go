@@ -3,39 +3,44 @@ package handler
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"vendas/internal/handler"
 	"vendas/internal/service"
+
+	"github.com/gin-gonic/gin"
 )
 
-// ProductHandler lida com as requisições HTTP relacionadas a produtos
 type ProductHandler struct {
 	service *service.ProductService
 }
 
-// NewProductHandler cria uma nova instância do handler
-func NewProductHandler(service *service.ProductService) *ProductHandler {
-	return &ProductHandler{service: service}
+func NewProductHandler(r *gin.Engine, service *service.ProductService) {
+	handler := &ProductHandler{service: service}
+
+	r.POST("/", create(service))
+	r.GET("/", handler.List)
+	r.GET("/:id", handler.GetByID)
 }
 
-// Create cria um novo produto
-func (h *ProductHandler) Create(ctx *gin.Context) {
-	var body struct {
-		Name  string  `json:"name" binding:"required"`
-		Price float64 `json:"price" binding:"required"`
-	}
+func create(h *ProductHandler) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var body struct {
+			Name  string  `json:"name" binding:"required"`
+			Price float64 `json:"price" binding:"required"`
+		}
 
-	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+		if err := ctx.ShouldBindJSON(&body); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 
-	product, err := h.service.Create(body.Name, body.Price)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+		product, err := h.service.Create(body.Name, body.Price)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 
-	ctx.JSON(http.StatusCreated, product)
+		ctx.JSON(http.StatusCreated, product)
+	}
 }
 
 // List retorna todos os produtos

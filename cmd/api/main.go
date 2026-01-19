@@ -18,22 +18,11 @@ func main() {
 	customerService := service.NewCustomerService(customerRepo)
 	productService := service.NewProductService(productRepo)
 
-	// Inicializa os handlers
-	customerHandler := handler.NewCustomerHandler(customerService)
-	productHandler := handler.NewProductHandler(productService)
-
-	// Configura o router
 	r := gin.Default()
 
-	// Rotas de clientes
-	r.POST("/customers", customerHandler.Create)
-	r.GET("/customers", customerHandler.List)
-	r.GET("/customers/:id", customerHandler.GetByID)
-
-	// Rotas de produtos
-	r.POST("/products", productHandler.Create)
-	r.GET("/products", productHandler.List)
-	r.GET("/products/:id", productHandler.GetByID)
+	// Inicializa os handlers
+	handler.NewCustomerHandler(r, customerService)
+	handler.NewProductHandler(r, productService)
 
 	// Inicia o servidor
 	log.Println("Server starting on :8080...")
