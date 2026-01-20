@@ -1,7 +1,5 @@
-# Environment variables
 .env
 
-# Binaries
 *.exe
 *.exe~
 *.dll
@@ -10,22 +8,17 @@
 bin/
 dist/
 
-# Test binary
 *.test
 
-# Output of the go coverage tool
 *.out
 
-# Go workspace file
 go.work
 
-# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
 .DS_Store
 Thumbs.db

@@ -2,6 +2,8 @@ package handler
 
 import (
 	"net/http"
+	"strings"
+	"unicode"
 
 	"vendas/internal/service"
 
@@ -32,9 +34,21 @@ func createCustomer(svc *service.CustomerService) gin.HandlerFunc {
 			return
 		}
 
-		customer, err := svc.Create(body.Name, body.Phone)
+		if len(body.Name) < 3 {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "customer name must have at least 3 characters"})
+			return
+		}
+
+		cleanPhone := cleanPhoneNumber(body.Phone)
+
+		if !isValidPhone(cleanPhone) {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid phone number"})
+			return
+		}
+
+		customer, err := svc.Create(body.Name, cleanPhone)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
@@ -72,4 +86,21 @@ func getCustomerByID(svc *service.CustomerService) gin.HandlerFunc {
 
 		ctx.JSON(http.StatusOK, customer)
 	}
+}
+
+func cleanPhoneNumber(phone string) string {
+	var result strings.Builder
+
+	for _, char := range phone {
+		if unicode.IsDigit(char) {
+			result.WriteRune(char)
+		}
+	}
+
+	return result.String()
+}
+
+func isValidPhone(phone string) bool {
+	length := len(phone)
+	return length >= 10 && length <= 11
 }

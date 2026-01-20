@@ -32,9 +32,19 @@ func createProduct(svc *service.ProductService) gin.HandlerFunc {
 			return
 		}
 
+		if len(body.Name) < 3 {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "product name must have at least 3 characters"})
+			return
+		}
+
+		if body.Price < 0 {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "price cannot be negative"})
+			return
+		}
+
 		product, err := svc.Create(body.Name, body.Price)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 

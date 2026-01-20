@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"vendas/internal/models"
 	"vendas/internal/repository"
 )
@@ -15,14 +14,6 @@ func NewProductService(repo *repository.ProductRepository) *ProductService {
 }
 
 func (s *ProductService) Create(name string, price float64) (models.Product, error) {
-	if len(name) < 3 {
-		return models.Product{}, errors.New("product name must have at least 3 characters")
-	}
-
-	if price < 0 {
-		return models.Product{}, errors.New("price cannot be negative")
-	}
-
 	product := models.Product{
 		Name:  name,
 		Price: price,
