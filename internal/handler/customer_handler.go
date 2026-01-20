@@ -14,12 +14,13 @@ type CustomerHandler struct {
 
 func NewCustomerHandler(r *gin.Engine, service *service.CustomerService) {
 	customersGroup := r.Group("/customers")
-	customersGroup.POST("/", create(service))
-	customersGroup.GET("/", list(service))
-	customersGroup.GET("/:id", getByID(service))
+
+	customersGroup.POST("/", createCustomer(service))
+	customersGroup.GET("/", listCustomers(service))
+	customersGroup.GET("/:id", getCustomerByID(service))
 }
 
-func create(svc *service.CustomerService) gin.HandlerFunc {
+func createCustomer(svc *service.CustomerService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body struct {
 			Name string `json:"name" binding:"required"`
@@ -40,7 +41,7 @@ func create(svc *service.CustomerService) gin.HandlerFunc {
 	}
 }
 
-func list(svc *service.CustomerService) gin.HandlerFunc {
+func listCustomers(svc *service.CustomerService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		customers, err := svc.List()
 		if err != nil {
@@ -51,7 +52,7 @@ func list(svc *service.CustomerService) gin.HandlerFunc {
 	}
 }
 
-func getByID(svc *service.CustomerService) gin.HandlerFunc {
+func getCustomerByID(svc *service.CustomerService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var uri struct {
 			ID int64 `uri:"id" binding:"required"`
