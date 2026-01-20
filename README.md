@@ -1,6 +1,5 @@
-# 🛒 Go Sales - Sistema de Vendas com MongoDB
-
-Sistema de vendas em Go usando Gin Framework e MongoDB.
+# Sistema de Vendas com MongoDB e Go
+É uma aplicação criada para organizar e controlar as vendas de uma vendedora independente, permitindo o gerenciamento de clientes, produtos e vendas.
 
 ## 📁 Arquitetura
 
