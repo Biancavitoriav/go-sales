@@ -2,16 +2,39 @@ package main
 
 import (
 	"log"
+	"os"
 
-	"github.com/gin-gonic/gin"
+	"vendas/internal/database"
 	"vendas/internal/handler"
 	"vendas/internal/repository"
 	"vendas/internal/service"
+
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	customerRepo := repository.NewCustomerRepository()
-	productRepo := repository.NewProductRepository()
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using default values")
+	}
+
+	mongoURI := os.Getenv("MONGODB_URI")
+	if mongoURI == "" {
+		mongoURI = "mongodb://localhost:27017"
+	}
+
+	mongoDBName := os.Getenv("MONGODB_DATABASE")
+	if mongoDBName == "" {
+		mongoDBName = "go_sales"
+	}
+
+	db, err := database.ConnectMongoDB(mongoURI, mongoDBName)
+	if err != nil {
+		log.Fatal("Failed to connect to MongoDB:", err)
+	}
+
+	customerRepo := repository.NewCustomerRepository(db)
+	productRepo := repository.NewProductRepository(db)
 
 	customerService := service.NewCustomerService(customerRepo)
 	productService := service.NewProductService(productRepo)
@@ -21,8 +44,13 @@ func main() {
 	handler.NewCustomerHandler(r, customerService)
 	handler.NewProductHandler(r, productService)
 
-	log.Println("Server starting on :8080...")
-	if err := r.Run(":8080"); err != nil {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Printf("🚀 Server starting on :%s...\n", port)
+	if err := r.Run(":" + port); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
 }

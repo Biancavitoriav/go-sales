@@ -13,11 +13,11 @@ type ProductHandler struct {
 }
 
 func NewProductHandler(r *gin.Engine, service *service.ProductService) {
-	handler := &ProductHandler{service: service}
+	productsGroup := r.Group("/products")
 
-	r.POST("/", createProduct(service))
-	r.GET("/", listProducts(handler))
-	r.GET("/:id", getProductByID(handler))
+	productsGroup.POST("/", createProduct(service))
+	productsGroup.GET("/", listProducts(service))
+	productsGroup.GET("/:id", getProductByID(service))
 }
 
 func createProduct(svc *service.ProductService) gin.HandlerFunc {
@@ -42,9 +42,9 @@ func createProduct(svc *service.ProductService) gin.HandlerFunc {
 	}
 }
 
-func listProducts(h *ProductHandler) gin.HandlerFunc {
+func listProducts(svc *service.ProductService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		products, err := h.service.List()
+		products, err := svc.List()
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -53,10 +53,10 @@ func listProducts(h *ProductHandler) gin.HandlerFunc {
 	}
 }
 
-func getProductByID(h *ProductHandler) gin.HandlerFunc {
+func getProductByID(svc *service.ProductService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var uri struct {
-			ID int64 `uri:"id" binding:"required"`
+			ID string `uri:"id" binding:"required"`
 		}
 
 		if err := ctx.ShouldBindUri(&uri); err != nil {
@@ -64,14 +64,9 @@ func getProductByID(h *ProductHandler) gin.HandlerFunc {
 			return
 		}
 
-		product, err := h.service.GetByID(uri.ID)
+		product, err := svc.GetByID(uri.ID)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		if product.ID == 0 {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": "product not found"})
+			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
 

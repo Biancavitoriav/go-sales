@@ -1,293 +1,111 @@
-# 🛒 Go Sales - Sistema de Vendas
+# 🛒 Go Sales - Sistema de Vendas com MongoDB
 
-Sistema simples de vendas construído em Go usando **Standard Layout Architecture**.
+Sistema de vendas em Go usando Gin Framework e MongoDB.
 
 ## 📁 Arquitetura
 
 ```
 go-sales/
-├── cmd/
-│   └── api/
-│       └── main.go              # Ponto de entrada da aplicação
+├── cmd/api/main.go
 ├── internal/
-│   ├── models/                  # Modelos de dados (Customer, Product)
-│   │   ├── customer.go
-│   │   └── product.go
-│   ├── repository/              # Camada de persistência
-│   │   ├── customer_repository.go
-│   │   └── product_repository.go
-│   ├── service/                 # Lógica de negócio
-│   │   ├── customer_service.go
-│   │   └── product_service.go
-│   └── handler/                 # Handlers HTTP (controllers)
-│       ├── customer_handler.go
-│       └── product_handler.go
-├── go.mod
-├── go.sum
-└── README.md
+│   ├── models/
+│   ├── repository/
+│   ├── service/
+│   ├── handler/
+│   └── database/
+├── .env.example
+└── go.mod
 ```
-
-## 🏗️ Camadas da Aplicação
-
-### **Models** (`internal/models/`)
-Estruturas de dados que representam as entidades do negócio.
-
-### **Repository** (`internal/repository/`)
-Responsável pelo armazenamento e recuperação de dados. 
-Atualmente usa armazenamento em memória (dados são perdidos ao reiniciar).
-
-### **Service** (`internal/service/`)
-Contém a lógica de negócio e validações.
-- Validação de dados
-- Regras de negócio
-- Orquestração de operações
-
-### **Handler** (`internal/handler/`)
-Lida com requisições HTTP e respostas.
-- Parse de requisições
-- Validação de entrada
-- Formatação de respostas JSON
 
 ## 🚀 Como Rodar
 
-### Pré-requisitos
-- Go 1.21 ou superior
-- Git
+### 1. Subir MongoDB com Docker
 
-### Instalação
-
-1. Clone o repositório:
 ```bash
-git clone <seu-repositório>
-cd go-sales
+docker run -d --name mongodb -p 27017:27017 mongo:latest
 ```
 
-2. Instale as dependências:
+### 2. Configurar variáveis de ambiente
+
+```bash
+cp .env.example .env
+```
+
+### 3. Instalar dependências
+
 ```bash
 go mod tidy
 ```
 
-3. Execute a aplicação:
+### 4. Rodar aplicação
+
 ```bash
 go run cmd/api/main.go
 ```
 
-A API estará disponível em `http://localhost:8080`
-
-## 📡 Endpoints da API
+## 📡 Endpoints
 
 ### Clientes
 
-#### Criar Cliente
 ```bash
+# Criar
 POST /customers
-Content-Type: application/json
-
 {
-  "name": "João Silva"
+  "name": "Alice",
+  "phone": "(11) 98765-4321"
 }
-```
 
-**Resposta:**
-```json
-{
-  "id": 1,
-  "name": "João Silva"
-}
-```
-
-#### Listar Clientes
-```bash
+# Listar
 GET /customers
-```
 
-**Resposta:**
-```json
-[
-  {
-    "id": 1,
-    "name": "João Silva"
-  },
-  {
-    "id": 2,
-    "name": "Maria Santos"
-  }
-]
-```
-
-#### Buscar Cliente por ID
-```bash
+# Buscar por ID
 GET /customers/:id
-```
-
-**Resposta:**
-```json
-{
-  "id": 1,
-  "name": "João Silva"
-}
 ```
 
 ### Produtos
 
-#### Criar Produto
 ```bash
+# Criar
 POST /products
-Content-Type: application/json
-
 {
   "name": "Notebook",
   "price": 2999.90
 }
-```
 
-**Resposta:**
-```json
-{
-  "id": 1,
-  "name": "Notebook",
-  "price": 2999.90
-}
-```
-
-#### Listar Produtos
-```bash
+# Listar
 GET /products
-```
 
-**Resposta:**
-```json
-[
-  {
-    "id": 1,
-    "name": "Notebook",
-    "price": 2999.90
-  },
-  {
-    "id": 2,
-    "name": "Mouse",
-    "price": 49.90
-  }
-]
-```
-
-#### Buscar Produto por ID
-```bash
+# Buscar por ID
 GET /products/:id
 ```
 
-**Resposta:**
-```json
-{
-  "id": 1,
-  "name": "Notebook",
-  "price": 2999.90
-}
-```
+## 🧪 Testes
 
-## 🧪 Testando a API
-
-### Usando cURL
-
-**Criar um cliente:**
 ```bash
+# Criar cliente
 curl -X POST http://localhost:8080/customers \
   -H "Content-Type: application/json" \
-  -d '{"name": "João Silva"}'
-```
+  -d '{"name": "Alice", "phone": "11987654321"}'
 
-**Listar clientes:**
-```bash
+# Listar clientes
 curl http://localhost:8080/customers
-```
 
-**Criar um produto:**
-```bash
+# Criar produto
 curl -X POST http://localhost:8080/products \
   -H "Content-Type: application/json" \
-  -d '{"name": "Notebook", "price": 2999.90}'
+  -d '{"name": "Mouse", "price": 49.90}'
 ```
 
-**Listar produtos:**
-```bash
-curl http://localhost:8080/products
-```
+## 🛠️ Stack
 
-**Buscar cliente por ID:**
-```bash
-curl http://localhost:8080/customers/1
-```
+- Go 1.21+
+- Gin Framework
+- MongoDB
+- Docker
 
 ## 📝 Validações
 
-### Cliente
-- Nome deve ter no mínimo 3 caracteres
-
-### Produto
-- Nome deve ter no mínimo 3 caracteres
-- Preço não pode ser negativo
-
-## 🔄 Fluxo de Dados
-
-```
-HTTP Request
-    ↓
-Handler (valida entrada)
-    ↓
-Service (aplica regras de negócio)
-    ↓
-Repository (persiste dados)
-    ↓
-Service (retorna resultado)
-    ↓
-Handler (formata resposta JSON)
-    ↓
-HTTP Response
-```
-
-## 🛠️ Tecnologias Utilizadas
-
-- **Go 1.21+** - Linguagem de programação
-- **Gin** - Framework web HTTP
-- **Standard Layout** - Arquitetura de organização de código
-
-## 📦 Dependências
-
-```
-github.com/gin-gonic/gin v1.10.0
-```
-
-## 🚧 Próximos Passos
-
-- [ ] Implementar persistência em banco de dados (PostgreSQL)
-- [ ] Adicionar testes unitários
-- [ ] Implementar autenticação JWT
-- [ ] Adicionar módulo de vendas
-- [ ] Criar documentação Swagger
-- [ ] Adicionar logging estruturado
-- [ ] Implementar tratamento de erros customizado
-
-## 💡 Por que Standard Layout?
-
-Esta arquitetura foi escolhida por ser:
-- ✅ **Simples** - Fácil de entender e manter
-- ✅ **Organizada** - Separação clara de responsabilidades
-- ✅ **Escalável** - Pode crescer conforme necessário
-- ✅ **Padrão de mercado** - Usado em 70% dos projetos Go
-
-## 📚 Aprendizado
-
-Este projeto demonstra:
-- Organização de código em Go
-- Injeção de dependências manual
-- Separação de camadas (Handler → Service → Repository)
-- API RESTful
-- Validações de negócio
-
-## 🤝 Contribuindo
-
-Sinta-se livre para abrir issues ou pull requests!
-
-## 📄 Licença
-
-MIT
+- Nome do cliente: mínimo 3 caracteres
+- Telefone: 10-11 dígitos numéricos
+- Nome do produto: mínimo 3 caracteres
+- Preço: não pode ser negativo

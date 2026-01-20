@@ -34,6 +34,6 @@ func (s *ProductService) List() ([]models.Product, error) {
 	return s.repo.FindAll()
 }
 
-func (s *ProductService) GetByID(id int64) (models.Product, error) {
+func (s *ProductService) GetByID(id string) (models.Product, error) {
 	return s.repo.FindByID(id)
 }
